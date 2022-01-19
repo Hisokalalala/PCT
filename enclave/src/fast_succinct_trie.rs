@@ -14,7 +14,8 @@ pub struct FST {
 impl FST {
     pub fn intersect(&self, query_buffer: &EncodedQueryBuffer, result: &mut EncodedResultBuffer) {
         for encoded_value_vec in query_buffer.queries.iter() {
-            if result.data.contains(&encoded_value_vec.id) {
+            if result.data.contains_key(&encoded_value_vec.id) {
+            // if result.data.contains_key(&encoded_value_vec.id) {
                 continue; 
             }
             for key in encoded_value_vec.parameters.iter() {
@@ -45,6 +46,9 @@ impl FST {
         #[cfg(feature = "nfp")]
         return Self { map: Trie::deserialize(&bytes), th };
         #[cfg(feature = "st")]
+        return Self { map: Trie::deserialize(&bytes) };
+        // Q?コンパイルエラー回避のために足したあんまよくないやつw
+        #[cfg(feature = "hashtable")]
         return Self { map: Trie::deserialize(&bytes) };
     }
 

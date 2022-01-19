@@ -91,18 +91,19 @@ impl<'a> Clocker<'a> {
     }
 }
 
+// 型を表示するための関数、debug用です。
 fn print_typename<T>(_: T) {
     println!("{}", std::any::type_name::<T>());
 }
 
-// TODO_C1: ここを拡張して、付加情報も読めるようにする
+// TODO_DONE?: ここを拡張して、付加情報も読めるようにする
 pub fn read_trajectory_hash_from_csv(filename: &str) -> Vec<Vec<u8>> {
     let file = File::open(filename).expect("file open error");
     let reader = BufReader::new(file);
     // println!("reader!!!!!Now {:?} will print!", reader);
     let mut hash_vec = Vec::new();
-    let mut temp_data: Vec<String> = Vec::new();
-    // let mut l = 0;
+    let mut lines_data: Vec<Vec<String>> = Vec::new();
+    let mut l = 0;
     // println!("hash_vec_new!!!!!Now {:?} will print!", hash_vec);
     for line in reader.lines().into_iter() {
         if let Ok(hash_and_add) = line {
@@ -110,24 +111,32 @@ pub fn read_trajectory_hash_from_csv(filename: &str) -> Vec<Vec<u8>> {
         // temp_data.push(line?.split(',').map(u8::from).collect::<Vec<_>>());
         // let value = Vec::new();
         // temp_data.push(value);
+            let mut line_data: Vec<String> = Vec::new();
             for s in hash_and_add.split(",") {
-
             //   let u8_s = u8::from_str(s).unwrap();    //リテラル（&str）をfloatに変換
             //     // let u8_s: Vec<u8> = s.as_bytes();
-                temp_data.push(s.to_string());  //格納
+                line_data.push(s.to_string());  //格納
             }
+            lines_data.push(line_data);
         // print_typename(&line);
             // print_typename(&hash);
-            let hash = temp_data[0].clone();
-            println!("hash!!!!!Now {:?} will print!", hash);
+            let hash = lines_data[l][0].clone();
+            // println!("hash!!!!!Now {:?} will print!", hash);
             let chars: Vec<char> = hash.chars().collect();
             let mut hash_bytes: Vec<u8> = Vec::with_capacity(hash.len() / 2);
             for i in 0..(hash.len() / 2) {
                 hash_bytes.push(16 * hex_to_num(chars[2 * i]) + hex_to_num(chars[2 * i + 1]));
             }
+            for i in 1..lines_data[l].len() {
+                let addi_chars: Vec<char> = lines_data[l][i].chars().collect();
+                hash_bytes.push(hex_to_num(addi_chars[0]));
+            }
+            // println!("hash_bytes!!!!!Now {:?} will print!", hash_bytes);
             hash_vec.push(hash_bytes);
+            l+=1;
         }
     }
+    // println!("lines_data!!!!!Now {:?} will print!", lines_data.len());
     // println!("hash_vec!!!!!Now {:?} will print!", hash_vec);
     hash_vec
 }

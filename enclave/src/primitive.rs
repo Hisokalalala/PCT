@@ -12,3 +12,5 @@ pub fn unixepoch_from_u8(u_timestamp: [u8; UNIXEPOCH_U8_SIZE]) -> UnixEpoch {
 pub type QueryId = u64;
 
 pub type EncodedValue = [u8; ENCODEDVALUE_SIZE];
+pub type HashValue = [u8; (ENCODEDVALUE_SIZE-ADDITIONAL_DATA_SIZE)];
+pub type AdditionalValue = [u8; ADDITIONAL_DATA_SIZE];

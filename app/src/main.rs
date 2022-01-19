@@ -79,7 +79,7 @@ fn private_set_intersection() {
     /* read central data */
     clocker.set_and_start("Read Central Data");
     let mut central_data = util::read_trajectory_hash_from_csv(c_filename);
-    // println!("central_data!!!!!Now {:?} will print!", central_data);
+    // println!("central_data!!!!!Now {:?} will print!", central_data); //ここまではちゃんと12区切りでいい感じに格納されてた
     clocker.stop("Read Central Data");
     let central_data_size = central_data.len();
 
@@ -87,6 +87,7 @@ fn private_set_intersection() {
     clocker.set_and_start("Distribute central data");
     #[cfg(feature = "hashtable")]
     // R: CentralHashSetにバイナリデータが入っているという想定で考える。と、Rにvec<vec<u8>>が入っている？内側のvec<u8>がchunkで、サーばで与えられたthreshholdごとのデータ、それが複数ある
+    // 多分ここで事故ったのかな？？ここで8ずつになった気がする
     let mut R: CentralHashSet = CentralHashSet::from_encoded_data(central_data, threashould);
     // println!("R_data!!!!!Now {:?} will print!", R.data);
     #[cfg(feature = "fsa")]
