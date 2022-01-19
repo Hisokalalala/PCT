@@ -96,7 +96,7 @@ impl CentralHashSet {
         let mut this = CentralHashSet::new();
         for (i, value) in encoded_data.iter().enumerate() {
             // hashset.insert(value.clone());
-            let mut arr = [0u8; 12];
+            let mut arr = [0_u8; 12];
             arr.copy_from_slice(value);
             hashset.insert(arr);
             // 付加情報を入れる場合、csvが拡張された後は、vecのデータ構造が変わる、

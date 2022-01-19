@@ -1,5 +1,6 @@
 use std::vec::Vec;
-use std::collections::HashSet;
+// use std::collections::HashSet;
+use std::collections::HashMap;
 use primitive::*;
 use encoded_query_buffer::EncodedQueryBuffer;
 use query_result::QueryResult;
@@ -10,12 +11,15 @@ use query_result::QueryResult;
 //     pub data: HashSet<QueryId>,
 // }
 pub struct EncodedResultBuffer {
-    pub data: HashSet<QueryId>,
+    pub data: HashMap::<QueryId, AdditionalValue>
+    // pub data: HashSet<QueryId>,
+    // pub addi_data: Vec<AdditionalValue>,
 }
 
 impl EncodedResultBuffer {
     pub fn new() -> Self {
         EncodedResultBuffer::default()
+        // pub data: HashSet<QueryId>,
     }
 
     // ここで最後の出力をしていて、resultに付加情報のidをキーとしたデータ構造を持たせれば参照できるはず。
@@ -36,7 +40,7 @@ impl EncodedResultBuffer {
             // println!("Now {:?} will print!", query);
             // println!("Now {:?} will print!", self);
             // ここはself.data={1}がquiery.idを含むかどうか
-            if self.data.contains(&query.id) {
+            if self.data.contains_key(&query.id) {
                 // println!("{0}, this is {1}.", &query.id, "1");
                 result.risk_level = 0.8; //ここのリスクレベルで確率を入力しちゃえばいいんじゃね!?
             } else {
