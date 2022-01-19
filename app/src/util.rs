@@ -91,11 +91,12 @@ impl<'a> Clocker<'a> {
     }
 }
 
+// 型を表示するための関数、debug用です。
 fn print_typename<T>(_: T) {
     println!("{}", std::any::type_name::<T>());
 }
 
-// TODO_C1: ここを拡張して、付加情報も読めるようにする
+// TODO_DONE?: ここを拡張して、付加情報も読めるようにする
 pub fn read_trajectory_hash_from_csv(filename: &str) -> Vec<Vec<u8>> {
     let file = File::open(filename).expect("file open error");
     let reader = BufReader::new(file);
@@ -130,7 +131,7 @@ pub fn read_trajectory_hash_from_csv(filename: &str) -> Vec<Vec<u8>> {
                 let addi_chars: Vec<char> = lines_data[l][i].chars().collect();
                 hash_bytes.push(hex_to_num(addi_chars[0]));
             }
-            println!("hash_bytes!!!!!Now {:?} will print!", hash_bytes);
+            // println!("hash_bytes!!!!!Now {:?} will print!", hash_bytes);
             hash_vec.push(hash_bytes);
             l+=1;
         }

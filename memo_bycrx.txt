@@ -138,3 +138,7 @@ move occurs because `line` has type `std::result::Result<std::string::String, st
 
 &hashの型
 &alloc::string::String
+
+
+現状
+hash tableでの、server側のデータの格納がうまくいっていないなう。

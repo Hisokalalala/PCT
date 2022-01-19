@@ -11,14 +11,15 @@ use encoded_query_buffer::EncodedQueryBuffer;
 #[derive(Clone, Debug)]
 pub struct EncodedHashTable {
     // hogeは補助情報のデータ構造
-    // pub map: HashMap<EncodedValue, hoge>,
-    pub map: HashSet<EncodedValue>
+    // pub map: HashMap<HashValue, AdditionalValue>,
+    pub map: HashSet<HashValue>,
 
 }
 impl EncodedHashTable {
     pub fn new() -> Self {
         EncodedHashTable {
-            map: HashSet::<EncodedValue>::with_capacity(THREASHOLD)
+            map: HashSet::<HashValue>::with_capacity(THREASHOLD)
+            // map: HashMap::<HashValue, AdditionalValue>::with_capacity(THREASHOLD)
         }
     }
 
@@ -34,6 +35,8 @@ impl EncodedHashTable {
                 continue; 
             }
             for key in encoded_value_vec.parameters.iter() {
+                println!("key!!!!!Now {:?} will print!", key);
+                println!("map!!!!!Now {:?} will print!", self.map);
                 if self.map.contains(key) {
                     result.data.insert(encoded_value_vec.id);
                     continue;
@@ -52,7 +55,7 @@ impl EncodedHashTable {
         //     age = [I*8+8.. I*8+ 9].copy_slice()
         //     dict.insert(hash, (age, …))
         // (age, …)の部分は, なんか別のデータ構造を定義する
-        let dict: HashSet<EncodedValue> = bincode::deserialize(&bytes[..]).unwrap();
+        let dict: HashSet<HashValue> = bincode::deserialize(&bytes[..]).unwrap();
         Self { map: dict }
         // let mask: 
         // Self { map: mask}

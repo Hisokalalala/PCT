@@ -8,6 +8,7 @@ pub const QUERY_U8_SIZE: usize = UNIXEPOCH_U8_SIZE + GEOHASH_U8_SIZE;
 // risk_level 1バイト + qeuryId ->risk_level=4byte
 pub const QUERY_ID_SIZE_U8: usize = 8;
 pub const QUERY_RESULT_U8: usize = 4;
+pub const ADDITIONAL_DATA_SIZE: usize = 4;
 pub const RESPONSE_DATA_SIZE_U8: usize = QUERY_ID_SIZE_U8 + QUERY_RESULT_U8;
 // Q? ここって何を書けば正解なんだ？
 // pub const POSSIBILITY_SIZE_F32: f32 
