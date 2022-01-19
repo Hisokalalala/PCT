@@ -1,0 +1,135 @@
+linuxのバージョンを確認するコマンド
+```
+cat /etc/lsb-release
+
+DISTRIB_ID=Ubuntu
+DISTRIB_RELEASE=18.04
+DISTRIB_CODENAME=bionic
+DISTRIB_DESCRIPTION="Ubuntu 18.04.5 LTS"
+```
+
+ubuntuにsqlite3を入れるコマンド
+```sudo apt install sqlite3```
+
+
+ファイル数カウントコマンド
+```find . -type f | wc -l```
+
+
+sqlite3操作コマンド
+```sqlite3 trajectory.db
+
+ls /home/fumiyuki/workspace/PCT/tools/accurate_analysis/
+cp /home/fumiyuki/workspace/PCT/tools/accurate_analysis/rand_acc_results.bin ./tools/accurate_analysis/
+ls /home/fumiyuki/workspace/PCT/succinct-trie/
+
+0000000000000000,付加情報1,付加情報2,付加情報3
+
+makeするときのコマンド
+QUERY_SIZE=1439 ENCODEDVALUE_SIZE=8 FEATURE="fsa st" make
+
+QUERY_SIZE=1439 ENCODEDVALUE_SIZE=8 FEATURE="hashtable st" make
+
+make clean && QUERY_SIZE=1439 ENCODEDVALUE_SIZE=8 FEATURE="fsa st" make
+
+RUST_BACKTRACE=1 bin/app 10000 data/sample 2 data/sample/server.csv
+
+ENCODEDVALUE_SIZEはハッシュかしたときの桁数、8バイトのハッシュにしてるから。もし7バイトのハッシュの時は7にする
+
+make cleanはエラーが起こった時にやってみた方がいいかも、変えたのに変わってないとき流行った方がいいかも、環境変数の違いはmakeで感知されないからやった方がいいかも。
+
+
+# 実装で私が変える必要あるところ
+1. 入力のところの引数を増やす必要がある
+2. 暗号化復号化の際の型を書き換える必要上がる、引数増えたから
+3. 復号化したあとの入力を格納する型を書き換える
+4. 出力のときに1だったら、確率を計算する処理を書いて、1の代わりに確率を出力する encoded_result_buffers.rs
+5. 
+
+
+encoded_result_buffer.rs->encoded_hash_table.rs->encoded_dictionary_buffer.rs
+
+
+PCT/app/src/main.rs入出力は流石にここか？
+でもなんで私はenclaveをみているのじゃ？
+
+
+付加情報の型
+
+年代、感染歴、ワクチン接種歴、マスク着用の有無
+
+多分risk_levelをうまいこと確率にすることができたら良さげ。
+
+
+```debug
+[1, 164, 81, 204, 48, 89, 37, 19]
+
+ 81, 205, 16, 9, 72, 179], [1, 164, 81, 205, 16, 9, 72, 179]] will print!
+[HashSet] r_i size = 120 bytes
+[HashSet] r_i size = 72 bytes
+```
+
+serialized
+
+objectをバイナリ化する作業
+
+バイナリからobjectを生成する作業をdeserialized
+
+sgxに渡すときはバイナリ化して渡さなくてはいけなくて、serializeが必要なんだけど、sgxの中でdeserializedして、もともとと同じ奴が得られるはずなんだけど。
+
+
+hashtableをバイナリ化する
+
+```
+01a451cc30592513, 10(,20,30以上), 0(1), 0(1,2,3), 0(1)
+
+01a451cc30592513, 10,0,0,0,      u8はunsigned intが8個並んでる奴
+
+struct RAW_DATA{
+    hash:vec<u8>,
+    age: u8,
+    infected: u8,
+    vaccine: u8,
+    mask: u8
+}
+
+impl RAW_DATA{
+    serialize
+    (deserializeはいっかいだけだからまあそのまま描いてもいい)
+}
+vec<RAW_DATA>
+01a451cc3059251310000
+10を1バイト(=u8)の16進数で表すと0a, ハッシュ値が16
+
+sgxにloadするときは一つのバイナリにする必要がある
+つまり、最終的に一つのu8のベクトルにする
+そのためには、RAW_DATAにあるserialized(10000のいち行だけをシリアライズ)を読み込んで、ループさせて一つのu8のベクトルに合体させる
+
+sgxの中では、u8のベクトルを受け取って、区切ってdeserializeする。
+
+# TODO Rust-analyzerをうまいことセッティング。
+cargo.tomlが一番上に来るようにプロジェクトをセットする
+vscodeで開くディレクトリを今のディレクトリじゃないやつにする！？
+
+// hashに追加するよりはhashをコピーして、コピーしたそれにくっつけるだけでserializedできる
+
+deserializeは8,1,1,1,1みたいな感じで引き剥がす？
+let query_id = query_id_from_u8(&response[i*RESPONSE_DATA_SIZE_U8..i*RESPONSE_DATA_SIZE_U8+QUERY_ID_SIZE_U8]);
+let result = query_result_from_u8(result.as_slice());
+らへんの情報でdeserializedできる。
+
+sgxにデータをloadするところ
+
+STEP***
+csvデータをRAW_DATAに読み込む、これをu8のバイナリにする。共通鍵を使って、バイナリを暗号化して、
+sgxにデータを渡す。sgxの中で復号化して、デシリアライズして、hash_tableにどんどんいれていく。keyをハッシュ値、valueを付加情報として入れる。(containsとか基本的に同じだと思うけど、その辺の調整が必要かも？)
+
+```
+
+
+move occurs because `line` has type `std::result::Result<std::string::String, std::io::Error>`, which does not implement the `Copy` trait
+&lineの型
+&core::result::Result<alloc::string::String, std::io::error::Error>
+
+&hashの型
+&alloc::string::String

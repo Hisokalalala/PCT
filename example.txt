@@ -1,0 +1,492 @@
+Q1. serverの命名はどうなっているのか？server-14000-24-22.csvはなんで使えなかったのか？
+
+Q2. trajectoryで軌跡データを生成して、それをtrajectory_hashで暗号化して、appにいれてPCTするとしたら、grid-encodingは何をしているのか？(obliv-basedの意味も知りたいかも) 他の手法と比較してるときの実装か！これは無視して良さげ
+Q3. accurate_analysisについて /ok
+1. cargo install diesel_cli --no-default-features --features sqliteはdockerの中では成功しなかった。sqlite3が入ってないからと思われる
+2. diesel migration run --database-url=trajectory.dbをしてもtrajectory.dbには何も入らなかった...??
+3. cargo run --release -- -i ../trajectory/data/client -m query と cargo run -- -i input.csv -m insertはなんかエラーで動かなかった。
+
+!!!!========Q4. 陽性の判定(0 or 1)とかってどうやってみるんだ？どっかに出力してる？？====!
+
+Q4. makeしようとすると事故る
+
+
+## warning: be sure to add `/home/cao/.cargo/bin` to your PATH to be able to run the installed binaries
+
+# appを使った、Intel SGXをつかう計算
+
+// ダメでした,そもそもコマンドが動かない問題。server.csvに何か問題があるのか？？
+
+RUST_BACKTRACE=1 bin/app 10000 tools/trajectory_hash/data_copied/tokyo 2 tools/trajectory_hash/data_copied/tokyo/server-14000-24-22.csv
+
+//これなら行けた
+RUST_BACKTRACE=1 bin/app 1200000 tools/trajectory_hash/data_copied/tokyo 2 tools/trajectory_hash/data_copied/tokyo/server-14000-24-22.csv
+```
+1th trie creation
+suffix: 35101
+louds_dense: 3688
+louds_sparse: 137096
+ r_i (server side chunk data) size = 348585 bytes //34万バイトは割と小さい、96MB
+```
+21-21とか、24-22、25-25はもう少し長くなる
+
+RUST_BACKTRACE=1 bin/app 10000 tools/trajectory_hash/data_copied/tokyo 2 data/sample/server.csv
+
+基本的に、バイトは同じじゃないと動かない？
+サーバーの方は厳しいのかもしれない
+
+//[UNTRUSTED] upload_query_data Failed SGX_ERROR_OUT_OF_MEMORY!
+RUST_BACKTRACE=1 bin/app 10000 tools/trajectory_hash/data_copied/tokyo 49999 data/sample/server.csv
+
+//memory allocation of 115096976 bytes failedIllegal instruction (core dumped)
+RUST_BACKTRACE=1 bin/app 10000 tools/trajectory_hash/data_copied/tokyo 9999 data/sample/server.csv
+
+//この二つはいい感じに動いた, 結果はresultフォルダに保存されてる
+RUST_BACKTRACE=1 bin/app 10000 tools/trajectory_hash/data_copied/tokyo 999 data/sample/server.csv
+RUST_BACKTRACE=1 bin/app 10000 tools/trajectory_hash/data_copied/tokyo 99 data/sample/server.csv
+
+/home/cao/work/PCT/tools/trajectory/data/server
+/home/cao/work/PCT/tools/trajectory_hash/data_copied/tokyo
+
+### Accuracyの実験
+
+#### 通常のクエリ
+
+```
+$ // generate raw trajectory data
+$ cd ~/workspace/PCT/tools/trajectory
+$ python generate.py --target server --size 1000 --dir data/server
+$ python generate.py --target client --size 1000 --dir data/client
+
+# python generate.py --target client --size 1 --dir data/client
+# python generate.py --target client --size 100 --dir data/client
+# python generate.py --target server --size 140000 --dir data/server
+
+$ // accurate analysis
+$ cd ~/workspace/PCT/tools/accurate_analysis
+$ diesel migration run --database-url=trajectory.db
+$ cargo run --release -- -i ../trajectory/data/server/NY-DensityEPR-1-0-1000.csv -m insert //utils書き換えたら成功した
+$ cargo run --release -- -i ../trajectory/data/client -m query -o acc_results.bin --theta-t 17 --theta-l-lng 0.0000215 --theta-l-lat 0.0000165 //時間かかったけど完了した
+
+$ // trajectory hash
+$ 
+$ mkdir data
+$ cargo run --release -- --target server --end-time 1285977540 --start-time 1285891200 -i ../trajectory/real_data/kinki/gen/server-50000.csv -o data/kinki/server-1000-24-22.csv --mix-type mix --theta-l 24 --theta-t 22
+$ cargo run --release -- --target client --end-time 1599090600 --start-time 1597881600 -i ../trajectory/data/gen/client -o data/client-24-22 --mix-type mix --theta-l 24 --theta-t 22
+
+$ // PSI-based PCT
+$ cd ~/workspace/PCT/succinct-trie
+$ cargo run --release -- -s ../tools/trajectory_hash/data/server-1000-24-22.csv -c ../tools/trajectory_hash/data -m normal --byte-length 8 --geo-length 24 --time-length 11 --theta-l 24 --theta-t 22 -o pct_resutls.bin //ついに動いた！
+```
+root@c624d50ecaa7:~/sgx/samplecode/PCT/tools/accurate_analysis# cargo run --release -- -u result-analysis --accurate-result-file ./acc_results.bin --pct-result-file ../../succinct-trie/pct_results.bin
+    Finished release [optimized] target(s) in 0.04s
+     Running `target/release/accurate_analysis -u result-analysis --accurate-result-file ./acc_results.bin --pct-result-file ../../succinct-trie/pct_results.bin`
+{"fn": 215176, "tp": 575880, "tn": 1224748, "fp": 196}
+```
+
+$ // Result analysis
+$ cd ~/workspace/PCT/tools/accurate_analysis
+$ cargo run --release -- -u result-analysis --accurate-result-file ./acc_results.bin --pct-result-file ../../succinct-trie/pct_results.bin
+```
+
+**実験結果**
+confusiion matrix: {“fp”: 0, “tn”: 1209551, “tp”: 576076, “fn”: 230373}
+正確: {“tn”: 1224748, “fp”: 196, “fn”: 215176, “tp”: 575880}
+
+false positiveが0になっているので正しそうな気がする
+accuracy = (1209551 + 576076) / (230373 + 1209551 + 576076) = 88.5 %
+
+
+#### accurate クエリ
+```
+$ // PSI-based PCT
+$ cd ~/workspace/PCT/succinct-trie
+$ cargo run --release -- -s ../tools/trajectory_hash/data/server-1000-24-22.csv -c ../tools/trajectory_hash/data -m accurate --byte-length 8 --geo-length 24 --time-length 11 --theta-l 24 --theta-t 22 -o pct_acc_resutls.bin
+
+//これは動いた
+cargo run --release -- -s ../tools/trajectory_hash/data_copied/random/server-1000-24-22.csv -c ../tools/trajectory_hash/data_copied/random -m accurate --byte-length 8 --geo-length 24 --time-length 11 --theta-l 24 --theta-t 22 -o pct_acc_resutls.bin
+
+$ // Result analysis
+$ cd ~/workspace/PCT/tools/accurate_analysis
+$ cargo run --release -- -u result-analysis --accurate-result-file ./acc_results.bin --pct-result-file ../../succinct-trie/pct_acc_results.bin
+
+# なんか加藤さんのコードコピってきたらできてた。ファイル作る時になんか事故ったのかな？
+root@c624d50ecaa7:~/sgx/samplecode/PCT/tools/accurate_analysis# cargo run --release -- -u result-analysis --accurate-result-file ./acc_results.bin --pct-result-file ../../succinct-trie/pct_acc_results.bin
+    Finished release [optimized] target(s) in 0.04s
+     Running `target/release/accurate_analysis -u result-analysis --accurate-result-file ./acc_results.bin --pct-result-file ../../succinct-trie/pct_acc_results.bin`
+{"tp": 806431, "fn": 18, "fp": 105184, "tn": 1104367}
+```
+
+**実験結果**
+fnがほとんどなくなってfpが結構増えた
+confusion matrix: {“tp”: 806431, “fn”: 18, “fp”: 105184, “tn”: 1104367}
+正確: {“fp”: 120561, “tp”: 791054, “tn”: 1104383, “fn”: 2}
+accuracy = (1104367 + 806431) / (1104367 + 806431 + 18 + 105184) = 94.8 %
+
+検出率は普通に高いと言える
+accurate versionにするとfnが0になってfpが増えるという．fnは境界付近の誤差
+
+
+### (Duration of exposure)
+(これ，そんなに面白くない．こういう拡張もできる．と書くだけにする)
+
+ユーザごとの正解・つまりEnd-to-Endのaccuracyを算出する
+
+```
+
+$ // accurate analysis
+$ cd ~/workspace/PCT/tools/accurate_analysis
+$ cargo run --release -- -i ../trajectory/data/client -m doe -o doe_acc_results.bin
+
+
+$ // PSI-based PCT
+$ cd ~/workspace/PCT/succinct-trie
+$ cargo run --release -- -s ../tools/trajectory_hash/data/server-1000-24-22.csv -c ../tools/trajectory_hash/data -m doe --byte-length 8 --geo-length 24 --time-length 11 --duration-of-exposure 15　--theta-l 24 --theta-t 22 -o pct_doe_results.bin
+
+$ // Result analysis
+$ cd ~/workspace/PCT/tools/accurate_analysis
+$ cargo run --release -- -u result-analysis --accurate-result-file ./doe_acc_results.bin --pct-result-file ../../succinct-trie/pct_doe_results.bin
+```
+
+
+### accuracyとパラメータとの関係
+
+1.↑
+geo : 1.83m → 24
+lng: .0000215
+lat: .0000165
+time: 17min → 22
+
+
+2.
+geo : 14.69m → 21
+lng: .0001720
+lat: .0001323
+time: 35min → 21
+
+```
+
+$ // accurate analysis
+$ cd ~/workspace/PCT/tools/accurate_analysis
+$ cargo run --release -- -i ../trajectory/data/client -m query -o acc_results_2.bin --theta-t 35 --theta-l-lng 0.0001720 --theta-l-lat 0.0001323
+
+$ // trajectory hash
+$ cd ~/workspace/PCT/tools/trajectory_hash
+$ mkdir data
+$ cargo run --release -- --target server --end-time 1599090600 --start-time 1597881600 -i ../trajectory/data/server/NY-DensityEPR-1-0-1000.csv -o data/server-1000-21-21.csv --mix-type mix --theta-l 21 --theta-t 21
+$ cargo run --release -- --target client --end-time 1599090600 --start-time 1597881600 -i ../trajectory/data/client -o data/client-21-21 --mix-type mix --theta-l 21 --theta-t 21
+
+$ // PSI-based PCT
+$ cd ~/workspace/PCT/succinct-trie
+$ cargo run --release -- -s ../tools/trajectory_hash/data/server-1000-21-21.csv -c ../tools/trajectory_hash/data -m normal --byte-length 7 --geo-length 21 --time-length 10 --theta-l 21 --theta-t 21 -o pct_results_21_21.bin
+
+$ // Result analysis
+$ cd ~/workspace/PCT/tools/accurate_analysis
+$ cargo run --release -- -u result-analysis --accurate-result-file ./acc_results_2.bin --pct-result-file ../../succinct-trie/pct_results_21_21.bin
+```
+
+{“tp”: 985961, “fp”: 0, “fn”: 312999, “tn”: 717040}
+正確: {“tn”: 745317, “fn”: 284722, “fp”: 326, “tp”: 985635}
+
+```
+$ // PSI-based PCT
+$ cd ~/workspace/PCT/succinct-trie
+$ cargo run --release -- -s ../tools/trajectory_hash/data/server-1000-21-21.csv -c ../tools/trajectory_hash/data -m accurate --byte-length 7 --geo-length 21 --time-length 10 --theta-l 21 --theta-t 21 -o pct_acc_results_21_21.bin
+
+$ // Result analysis
+$ cd ~/workspace/PCT/tools/accurate_analysis
+$ cargo run --release -- -u result-analysis --accurate-result-file ./acc_results_2.bin --pct-result-file ../../succinct-trie/pct_acc_results_21_21.bin
+```
+
+{“fp”: 186737, “tn”: 530303, “fn”: 85, “tp”: 1298875}
+
+正確: {“tn”: 530334, “fn”: 54, “fp”: 215309, “tp”: 1270303}
+
+3.
+geo : 0.9m → 25
+lng: .0000108
+lat: .0000082
+time: 2min → 25
+
+```
+$ // accurate analysis
+$ cd ~/workspace/PCT/tools/accurate_analysis
+$ cargo run --release -- -i ../trajectory/data/client -m query -o acc_results_3.bin --theta-t 2 --theta-l-lng 0.0000108 --theta-l-lat 0.0000082
+
+$ // trajectory hash
+$ cd ~/workspace/PCT/tools/trajectory_hash
+$ cargo run --release -- --target server --end-time 1599090600 --start-time 1597881600 -i ../trajectory/data/server/NY-DensityEPR-1-0-1000.csv -o data/server-1000-25-25.csv --mix-type mix --theta-l 25 --theta-t 25
+$ cargo run --release -- --target client --end-time 1599090600 --start-time 1597881600 -i ../trajectory/data/client -o data/client-25-25 --mix-type mix --theta-l 25 --theta-t 25
+
+$ // PSI-based PCT
+$ cd ~/workspace/PCT/succinct-trie
+$ cargo run --release -- -s ../tools/trajectory_hash/data/server-1000-25-25.csv -c ../tools/trajectory_hash/data -m normal --byte-length 8 --geo-length 25 --time-length 14 --theta-l 25 --theta-t 25 -o pct_results_25_25.bin
+
+$ // Result analysis
+$ cd ~/workspace/PCT/tools/accurate_analysis
+$ cargo run --release -- -u result-analysis --accurate-result-file ./acc_results_3.bin --pct-result-file ../../succinct-trie/pct_results_25_25.bin
+```
+{“fp”: 0, “fn”: 243469, “tp”: 178713, “tn”: 1593818}
+正確: {“tp”: 178467, “fp”: 246, “fn”: 225536, “tn”: 1611751}
+
+```
+$ // PSI-based PCT
+$ cd ~/workspace/PCT/succinct-trie
+$ cargo run --release -- -s ../tools/trajectory_hash/data/server-1000-25-25.csv -c ../tools/trajectory_hash/data -m accurate --byte-length 8 --geo-length 25 --time-length 14 --theta-l 25 --theta-t 25 -o pct_acc_results_25_25.bin
+
+$ // Result analysis
+$ cd ~/workspace/PCT/tools/accurate_analysis
+$ cargo run --release -- -u result-analysis --accurate-result-file ./acc_results_3.bin --pct-result-file ../../succinct-trie/pct_acc_results_25_25.bin
+```
+{“fp”: 103895, “tp”: 422178, “tn”: 1489923, “fn”: 4}
+正確: {“tn”: 1489927, “fn”: 0, “tp”: 404003, “fp”: 122070}
+
+
+### competitor
+手順
+サーバのデータもクライアントのデータもある時間における地理データの周囲の9個を生成する．
+クライアントのデータに対してイテレーションしてサーバのデータからORAMのバイナリサーチでひたすら探す．
+1. データの規模感とパフォーマンスを示す　
+2. accuracyについて評価する？
+どーやって評価するか，提案手法と比較するのはできる．特定の時間に対してのみやるか，一応．
+数は少なくてもまぁaccuracyは出るはずなので．
+
+サーバ・クライアントのデータセットからある時刻のデータを抜き取るようなスクリプトを書く
+１つのデータあたり+8このデータに拡張させる関数を書く
+
+- accuracyはアルゴリズムで決定されるのでORAM上で実行しなくても計測できる
+- ORAM上で実験すべきなのはパフォーマンスのみでOK.
+- つまりベンチマークの実験だけでよさそう．
+
+
+#### Accuracy
+ORAM上で実行する必要はない
+```
+// 
+$ cd ~/workspace/PCT/tools/grid-encoding
+$ mkdir data
+
+// server-side
+$ cargo run --release --  --theta-l-lng 0.0000215 --theta-l-lat 0.0000165 --theta-l-lng-max 0 --theta-l-lng-min 0 --theta-l-lat-max 0 --theta-l-lat-min 0 --time 1598486400 --target server --input-file ../trajectory/data/server/NY-DensityEPR-1-0-1000.csv --output-file data/server-1000-obl.csv
+
+$ // server data size: 1000, lng_max: -72.68559809320793, lng_min: -79.40396146117828, lat_max: 44.72791064705669, lat_min: 40.56250496915266
+
+// client-side
+$ cargo run --release --  --theta-l-lng 0.0000215 --theta-l-lat 0.0000165 --theta-l-lng-max 0 --theta-l-lng-min 0 --theta-l-lat-max 0 --theta-l-lat-min 0 --time 1598486400 --target client --input-file ../trajectory/data/client --output-file data/client-obl
+
+$ //client data size: 1
+lng_max: -72.69155577153637, lng_min: -78.77926328628125, lat_max: 44.11665180946731, lat_min: 40.65767072844662
+```
+lng_min: -79.40396146117828
+lng_max: -72.68559809320793
+lat_min: 40.56250496915266
+lat_max: 44.72791064705669
+
+```
+$ cargo run --release --  --theta-l-lng 0.0000215 --theta-l-lat 0.0000165 --theta-l-lng-max 72.60 --theta-l-lng-min 79.50 --theta-l-lat-max 44.80 --theta-l-lat-min 40.50 --time 1598486400 --target pct --client-input-dir ../trajectory/data/client --output-file obliv-result.bin --input-file ../trajectory/data/server/NY-DensityEPR-1-0-1000.csv
+```
+
+
+```
+$ cd ~/workspace/PCT/tools/accurate_analysis
+$ cargo run --release -- -i ../trajectory/data/client -m obliv -o obliv_acc_results.bin --theta-t 1598486400 --theta-l-lng 0.0000215 --theta-l-lat 0.0000165
+```
+
+```
+$ cargo run --release -- -u result-analysis --accurate-result-file ./obliv_acc_results.bin --pct-result-file ../grid-encoding/obliv-result.bin
+```
+100人のクライアントに対してこんな感じ
+{“fn”: 13, “fp”: 0, “tp”: 23, “tn”: 64}
+
+
+100個ランダムにサンプリングした時間に対して実験を行なった結果
+Total results: TP:  2206 , TN:  6986 , FP:  2 , FN:  806
+
+
+
+#### Peformance
+リアルデータを使う必要はない．
+[tests/bench_bs.oc · floram-release · neucrypt / floram · GitLab](https://gitlab.com/neucrypt/floram/-/blob/floram-release/tests/bench_bs.oc)
+にあるテストスクリプトで実行する．
+公平な比較はできないが1000:100*9 のシナリオでやって，十分に遅いということを示す
+
+シナリオの説明
+手法的な問題でt = 1598486400の時のみを対象にする．
+100人のクライアントのデータを処理する．100人のクライアントのデータは9x100 の処理にかかる時間
+サーバは1000*9で9000データ
+```
+$ cd ~/workspace/floram
+$ make
+$ (terminal 1) ./build/tests/bench_bs -o fssl_cprg -i 10 -e 9000 -s 900
+$ (terminal 2) ./build/tests/bench_bs -o fssl_cprg -i 10 -c localhost -e 9000 -s 900
+```
+Binary Search (elements:9000, searches:900): 123672671 microseconds avg, 537370960 gates avg, 259982480 bytes avg
+Total time: 123.847349 s
+
+
+この結果 が 区間内の時間に線形に比例して増えることに注意．
+
+
+
+1人のクライアント（つまりデータ数9）でサーバ1000の場合は？
+```
+$ cd ~/workspace/floram
+$ make
+$ (terminal 1) ./build/tests/bench_bs -o fssl_cprg -i 10 -e 9000 -s 9
+$ (terminal 2) ./build/tests/bench_bs -o fssl_cprg -i 10 -c localhost -e 9000 -s 9
+```
+結果（バイナリサーチにかかる時間）
+Binary Search (elements:9000, searches:9): 1511669 microseconds avg, 5376244 gates avg, 180465448 bytes avg
+実行時間: 1.03秒
+実行時間: 120MBくらいの通信量
+
+この結果 が 区間内の時間に線形に比例して増える．
+
+
+### 実データ
+idあたり1日ずつのデータしかない．
+ただし，50万人以上いる
+1日のデータを14日間のデータにマージする必要はある？なくね．
+パフォーマンスは14daysではなくてクライアントのデータ数(1分ごとのデータなので1440)で示すことにする．
+生成データでは1440*14=20160でパフォーマンスを評価し，これらは別物とすレバ良さげ
+
+サーバー 14000データ
+クライアント 1000人(一人あたり1440クエリしかないので)
+
+1. 元データをダウンロード
+2. `realdata.ipynb`で行を抽出してサーバサイドのデータとクライアントサイドのデータに分ける
+
+
+#### Tokyo
+```
+
+$ // accurate analysis
+$ cd ~/workspace/PCT/tools/accurate_analysis
+$ mv trajectory.db trajectory-gen.db
+$ diesel migration run --database-url=trajectory.db
+$ cargo run --release -- -i ../trajectory/real_data/tokyo/gen/server-14000.csv -m insert
+$ cargo run --release -- -i ../trajectory/real_data/tokyo/gen -m query -o tokyo_acc_results.bin --theta-t 17 --theta-l-lng 0.0000215 --theta-l-lat 0.0000174
+
+$ // trajectory hash
+$ cd ~/workspace/PCT/tools/trajectory_hash
+$ mkdir data/tokyo
+$ cargo run --release -- --target server --end-time 1222905540 --start-time 1222819200 -i ../trajectory/real_data/tokyo/gen/server-14000.csv -o data/tokyo/server-14000-24-22.csv --mix-type mix --theta-l 24 --theta-t 22 --format 2
+$ cargo run --release -- --target client --end-time 1222905540 --start-time 1222819200 -i ../trajectory/real_data/tokyo/gen -o data/tokyo/client-24-22 --mix-type mix --theta-l 24 --theta-t 22 --format 2
+
+$ // PSI-based PCT
+$ cd ~/workspace/PCT/succinct-trie
+$ cargo run --release -- -s ../tools/trajectory_hash/data/tokyo/server-14000-24-22.csv -c ../tools/trajectory_hash/data/tokyo -m normal --byte-length 7 --geo-length 24 --time-length 7 --theta-l 24 --theta-t 22 -o tokyo_pct_results.bin
+
+# ↑sgxの中で動かしているコードじゃない
+# パフォーマンスとかみるときはmakeのやつ
+
+PCT/tools/trajectory_hash/data/tokyo/server-14000-24-22.csv
+
+$ cargo run --release -- -s ../tools/trajectory_hash/data_copied/tokyo/server-1000-24-22.csv -c ../tools/trajectory_hash/data_copied/tokyo -m normal --byte-length 7 --geo-length 24 --time-length 7 --theta-l 24 --theta-t 22 -o tokyo_pct_results.bin
+
+$ // Result analysis
+$ cd ~/workspace/PCT/tools/accurate_analysis
+$ cargo run --release -- -u result-analysis --accurate-result-file ./tokyo_acc_results.bin  --pct-result-file ../../succinct-trie/tokyo_pct_results.bin
+```
+
+{“tp”: 112459, “fp”: 2, “tn”: 28120, “fn”: 1880}
+
+正確: {“fp”: 2, “fn”: 1855, “tn”: 28145, “tp”: 112459}
+
+```
+$ // accurate query
+$ cargo run --release -- -s ../tools/trajectory_hash/data/tokyo/server-14000-24-22.csv -c ../tools/trajectory_hash/data/tokyo -m accurate --byte-length 7 --geo-length 24 --time-length 7 --theta-l 24 --theta-t 22 -o acc_tokyo_pct_results.bin
+$ cargo run --release -- -u result-analysis --accurate-result-file ./kinki_acc_results.bin  --pct-result-file ../../succinct-trie/acc_tokyo_pct_results.bin
+```
+{“fp”: 1352, “tp”: 114336, “tn”: 26770, “fn”: 3}
+正確: {“tp”: 114313, “fn”: 1, “tn”: 26772, “fp”: 1375}
+
+#### Kinki
+```
+
+$ // accurate analysis
+$ cd ~/workspace/PCT/tools/accurate_analysis
+$ mv trajectory.db trajectory-tokyo.db
+$ diesel migration run --database-url=trajectory.db
+$ cargo run --release -- -i ../trajectory/real_data/kinki/gen/server-14000.csv -m insert
+$ cargo run --release -- -i ../trajectory/real_data/kinki/gen -m query -o kinki_acc_results.bin --theta-t 17 --theta-l-lng 0.0000215 --theta-l-lat 0.0000175
+
+$ // trajectory hash
+$ cd ~/workspace/PCT/tools/trajectory_hash
+$ mkdir data/kinki
+$ cargo run --release -- --target server --end-time 1285977540 --start-time 1285891200 -i ../trajectory/real_data/kinki/gen/server-14000.csv -o data/kinki/server-14000-24-22.csv --mix-type mix --theta-l 24 --theta-t 22 --format 2
+$ (geo_length 24, time_length 7 bit_length 55)
+$ cargo run --release -- --target client --end-time 1285977540 --start-time 1285891200 -i ../trajectory/real_data/kinki/gen -o data/kinki/client-24-22 --mix-type mix --theta-l 24 --theta-t 22 --format 2
+
+$ // PSI-based PCT
+$ cd ~/workspace/PCT/succinct-trie
+$ cargo run --release -- -s ../tools/trajectory_hash/data/kinki/server-14000-24-22.csv -c ../tools/trajectory_hash/data/kinki -m normal --byte-length 7 --geo-length 24 --time-length 7 --theta-l 24 --theta-t 22 -o kinki_pct_results.bin
+
+$ // Result analysis
+$ cd ~/workspace/PCT/tools/accurate_analysis
+$ cargo run --release -- -u result-analysis --accurate-result-file ./kinki_acc_results.bin  --pct-result-file ../../succinct-trie/kinki_pct_results.bin
+```
+
+{“fp”: 0, “tp”: 1007, “fn”: 48, “tn”: 141406}
+正確: {“tp”: 1007, “tn”: 141409, “fn”: 45, “fp”: 0}
+
+```
+$ // accurate query
+$ cargo run --release -- -s ../tools/trajectory_hash/data/kinki/server-14000-24-22.csv -c ../tools/trajectory_hash/data/kinki -m accurate --byte-length 7 --geo-length 24 --time-length 7 --theta-l 24 --theta-t 22 -o acc_kinki_pct_results.bin
+$ cargo run --release -- -u result-analysis --accurate-result-file ./kinki_acc_results.bin  --pct-result-file ../../succinct-trie/acc_kinki_pct_results.bin
+```
+
+{“fn”: 0, “fp”: 26, “tp”: 1055, “tn”: 141380}
+正確: {“tp”: 1052, “tn”: 141380, “fn”: 0, “fp”: 29}
+
+### Performance
+
+最悪ケースを測定する時には，FSTのcontinueをコメントアウトすれば良い．
+つまり見つかったからもう探さないをなくす．
+
+```
+$ FEATURE=“fsa th56” make
+$ bin/app 1000000 tools/trajectory_hash/data/21-21 100 tools/trajectory_hash/data/21-21/server-1000-21-21.csv
+```
+
+#### Random
+```
+$ cd ~/workspace/PCT/tools/trajectory
+$ python random_gen.py
+
+$ // accurate analysis
+$ cd ~/workspace/PCT/tools/accurate_analysis
+$ diesel migration run --database-url=trajectory-rand.db
+$ cargo run --release -- -i ../trajectory/random/server-14000-random.csv -m insert
+$ cargo run --release -- -i ../trajectory/random -m query -o rand_acc_results.bin --theta-t 17 --theta-l-lng 0.0000215 --theta-l-lat 0.0000165
+
+$ // trajectory hash
+$ cd ~/workspace/PCT/tools/trajectory_hash
+$ mkdir data/random
+$ cargo run --release -- --target server --end-time 1599091200 --start-time 1597881600 -i ../trajectory/random/server-14000-random.csv -o data/random/server-1000-24-22.csv --mix-type mix --theta-l 24 --theta-t 22
+$ cargo run --release -- --target client --end-time 1599091200 --start-time 1597881600 -i ../trajectory/random -o data/random/client-24-22 --mix-type mix --theta-l 24 --theta-t 22
+
+$ // PSI-based PCT
+$ cd ~/workspace/PCT/succinct-trie
+$ cargo run --release -- -s ../tools/trajectory_hash/data/random/server-1000-24-22.csv -c ../tools/trajectory_hash/data/random -m normal --byte-length 8 --geo-length 24 --time-length 11 --theta-l 24 --theta-t 22 -o rand_pct_resutls.bin
+
+$ // Result analysis
+$ cd ~/workspace/PCT/tools/accurate_analysis
+$ cargo run --release -- -u result-analysis --accurate-result-file ./rand_acc_results.bin --pct-result-file ../../succinct-trie/rand_pct_results.bin
+```
+
+
+
+```
+$ // accurate query
+$ cargo run --release -- -s ../tools/trajectory_hash/data/random/server-1000-24-22.csv -c ../tools/trajectory_hash/data/random -m accurate --byte-length 8 --geo-length 24 --time-length 11 --theta-l 24 --theta-t 22 -o rand_acc_pct_results.bin
+$ cargo run --release -- -u result-analysis --accurate-result-file ./kinki_acc_results.bin  --pct-result-file ../../succinct-trie/rand_acc_pct_results.bin
+```
+
+
+
+# SGXをつかう
+[docker-inside]$ make clean && QUERY_SIZE=1439 ENCODEDVALUE_SIZE=8 FEATURE="fsa st" make && RUST_BACKTRACE=1 bin/app 10000 data/sample 2 data/sample/server.csv
+
+10000 -> chunkのブロックサイズ
+data/sample 

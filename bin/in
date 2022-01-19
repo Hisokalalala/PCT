@@ -1,0 +1,8 @@
+#!/bin/bash
+
+echo '+ cd docker'
+cd docker
+echo '+ docker-compose exec pct /bin/bash'
+
+PROJECT_NAME=cao_PCT
+docker-compose -p $PROJECT_NAME exec pct /bin/bash

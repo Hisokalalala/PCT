@@ -1,0 +1,5 @@
+#!/bin/bash
+
+PROJECT_NAME=cao_PCT
+
+cd docker && docker-compose -p $PROJECT_NAME up -d
