@@ -14,3 +14,10 @@ pub type QueryId = u64;
 pub type EncodedValue = [u8; ENCODEDVALUE_SIZE];
 pub type HashValue = [u8; (ENCODEDVALUE_SIZE-ADDITIONAL_DATA_SIZE)];
 pub type AdditionalValue = [u8; ADDITIONAL_DATA_SIZE];
+
+// pub struct AdditionalValue {
+//     pub age: u8,
+//     pub infected: u8,
+//     pub vaccine: u8,
+//     pub mask: u8,
+// }

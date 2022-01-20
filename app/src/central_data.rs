@@ -5,7 +5,7 @@ use bincode;
 use std::mem;
 
 use crate::enc_util::encrypt_central_data;
-
+pub const ENCODEDVALUE_SIZE: usize = 12;
 
 /* rie
     チャンク化しない
@@ -91,12 +91,12 @@ impl CentralHashSet {
         // encoded_dataは
         
         // let mut hashset: HashSet<EncodedValue> = HashSet::with_capacity(0);
-        let mut hashset: HashSet<[u8; 12]> = HashSet::with_capacity(0);
+        let mut hashset: HashSet<[u8; ENCODEDVALUE_SIZE]> = HashSet::with_capacity(0);
         
         let mut this = CentralHashSet::new();
         for (i, value) in encoded_data.iter().enumerate() {
             // hashset.insert(value.clone());
-            let mut arr = [0_u8; 12];
+            let mut arr = [0_u8; ENCODEDVALUE_SIZE];
             arr.copy_from_slice(value);
             hashset.insert(arr);
             // 付加情報を入れる場合、csvが拡張された後は、vecのデータ構造が変わる、

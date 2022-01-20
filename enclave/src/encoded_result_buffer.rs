@@ -11,7 +11,9 @@ use query_result::QueryResult;
 //     pub data: HashSet<QueryId>,
 // }
 pub struct EncodedResultBuffer {
-    pub data: HashMap::<QueryId, AdditionalValue>
+    // dataではserverと接触とされたclientのidがキーになっていて、値は接触した際のserverの付加情報となっている
+    pub data: HashMap::<QueryId, Vec<AdditionalValue>>,
+    pub client_data: HashMap::<QueryId, Vec<AdditionalValue>>
     // pub data: HashSet<QueryId>,
     // pub addi_data: Vec<AdditionalValue>,
 }
@@ -31,16 +33,18 @@ impl EncodedResultBuffer {
         query_buffer: &EncodedQueryBuffer,
         response_vec: &mut Vec<u8>,
     ) {
+        println!("self {:?} will print!", self);
         // ここでのqueriesは構造体のメンバ変数,クエリにあったidを一つ一つみていって、
         // それをresult.idに格納して同時にとresult.risk_levelを設定した
         for query in query_buffer.queries.iter() {
             let mut result = QueryResult::new();
             result.query_id = query.id;
             // println!("Now {:?} will print!", query_buffer);
-            // println!("Now {:?} will print!", query);
-            // println!("Now {:?} will print!", self);
+            // println!("query {:?} will print!", query);
+            // println!("self {:?} will print!", self);
             // ここはself.data={1}がquiery.idを含むかどうか
             if self.data.contains_key(&query.id) {
+                // println!("query {:?} will print!", query);
                 // println!("{0}, this is {1}.", &query.id, "1");
                 result.risk_level = 0.8; //ここのリスクレベルで確率を入力しちゃえばいいんじゃね!?
             } else {
