@@ -11,7 +11,9 @@ use query_result::QueryResult;
 //     pub data: HashSet<QueryId>,
 // }
 pub struct EncodedResultBuffer {
-    pub data: HashMap::<QueryId, AdditionalValue>
+    // dataではserverと接触とされたclientのidがキーになっていて、値は接触した際のserverの付加情報となっている
+    pub data: HashMap::<QueryId, Vec<AdditionalValue>>,
+    pub client_data: HashMap::<QueryId, Vec<AdditionalValue>>
     // pub data: HashSet<QueryId>,
     // pub addi_data: Vec<AdditionalValue>,
 }
@@ -20,6 +22,81 @@ impl EncodedResultBuffer {
     pub fn new() -> Self {
         EncodedResultBuffer::default()
         // pub data: HashSet<QueryId>,
+    }
+
+    fn cal_pos_age(server_data: u8, client_data: u8) -> f32 {
+        // 年齢による人にうつされる確率
+        let mut age_get = HashMap::<u8, f32>::new();
+        age_get.insert(0, 0.5);
+        age_get.insert(1, 0.4);
+        age_get.insert(2, 0.3);
+        age_get.insert(3, 0.5);
+        age_get.insert(4, 0.6);
+        // 年齢による人に移す確率
+        let mut age_to = HashMap::<u8, f32>::new();
+        age_to.insert(0, 0.8);
+        age_to.insert(1, 0.7);
+        age_to.insert(2, 0.9);
+        age_to.insert(3, 0.6);
+        age_to.insert(4, 0.4);
+
+        let p = age_get[&client_data] * age_to[&server_data];
+        p
+    }
+
+    fn cal_pos_infected(server_data: u8, client_data: u8) -> f32 {
+        // 感染歴による人にうつされる確率
+        let mut infected_get = HashMap::<u8, f32>::new();
+        infected_get.insert(0, 0.8);
+        infected_get.insert(1, 0.3);
+        // 感染歴による人に移す確率
+        let mut infected_to = HashMap::<u8, f32>::new();
+        infected_to.insert(0, 0.5);
+        infected_to.insert(1, 0.5);
+
+        let p = infected_get[&client_data] * infected_to[&server_data];
+        p
+    }
+
+    fn cal_pos_vaccine(server_data: u8, client_data: u8) -> f32 {
+        // ワクチン接種回数による人にうつされる確率
+        let mut vaccine_get = HashMap::<u8, f32>::new();
+        vaccine_get.insert(0, 0.6);
+        vaccine_get.insert(1, 0.5);
+        vaccine_get.insert(2, 0.3);
+        vaccine_get.insert(3, 0.2);
+        // ワクチン接種回数による人に移す確率
+        let mut vaccine_to = HashMap::<u8, f32>::new();
+        vaccine_to.insert(0, 0.1);
+        vaccine_to.insert(1, 0.3);
+        vaccine_to.insert(2, 0.4);
+        vaccine_to.insert(3, 0.3);
+
+        let p = vaccine_get[&client_data] * vaccine_to[&server_data];
+        p
+    }
+
+    fn cal_pos_mask(server_data: u8, client_data: u8) -> f32 {
+        // clientがserverにマスクの有無でうつされる確率
+        let mut p: f32 = 1.0;
+        if server_data == 0 && client_data == 0 {
+            p = 0.4;
+        } else if server_data == 1 && client_data == 0 {
+            p = 0.25;
+        } else if server_data == 0 && client_data == 1 {
+            p = 0.3;
+        } else if server_data == 1 && client_data == 1 {
+            p = 0.05;
+        } else {
+            p = 1.0;
+        }
+        p
+    }
+
+    // 全ての付加情報を使って確率を計算した
+    fn calculate_possibility(server_data: AdditionalValue, client_data: AdditionalValue) -> f32 {
+        let p = EncodedResultBuffer::cal_pos_age(server_data[0], client_data[0]) * EncodedResultBuffer::cal_pos_infected(server_data[1], client_data[1]) * EncodedResultBuffer::cal_pos_vaccine(server_data[2], client_data[2]) * EncodedResultBuffer::cal_pos_mask(server_data[3], client_data[3]);
+        p
     }
 
     // ここで最後の出力をしていて、resultに付加情報のidをキーとしたデータ構造を持たせれば参照できるはず。
@@ -31,18 +108,36 @@ impl EncodedResultBuffer {
         query_buffer: &EncodedQueryBuffer,
         response_vec: &mut Vec<u8>,
     ) {
+        // println!("self {:?} will print!", self);
         // ここでのqueriesは構造体のメンバ変数,クエリにあったidを一つ一つみていって、
         // それをresult.idに格納して同時にとresult.risk_levelを設定した
         for query in query_buffer.queries.iter() {
             let mut result = QueryResult::new();
             result.query_id = query.id;
             // println!("Now {:?} will print!", query_buffer);
-            // println!("Now {:?} will print!", query);
-            // println!("Now {:?} will print!", self);
+            // println!("query {:?} will print!", query);
+            // println!("self {:?} will print!", self);
             // ここはself.data={1}がquiery.idを含むかどうか
             if self.data.contains_key(&query.id) {
-                // println!("{0}, this is {1}.", &query.id, "1");
-                result.risk_level = 0.8; //ここのリスクレベルで確率を入力しちゃえばいいんじゃね!?
+                // println!("query_id {:?} will print!", query.id);
+                // println!("len {:?} will print!", self.data[&query.id].len());
+                // println!("result_data {:?} will print!", self.data[&query.id]);
+                // println!("query_id {:?} will print!", self.client_data[&query.id]);
+                // println!("======================================");
+                if self.data[&query.id].len() == 1 {
+                    result.risk_level = EncodedResultBuffer::calculate_possibility(self.data[&query.id][0], self.client_data[&query.id][0]);
+                } else {
+                    let len = self.data[&query.id].len();
+                    // let mut v= vec![5, 6, 8, 4, 2, 7];
+                    // let minValue= *v.iter().min().unwrap();
+                    let mut v_pos = vec![::std::f32::NAN];
+                    for i in 0..len {
+                        v_pos.push(EncodedResultBuffer::calculate_possibility(self.data[&query.id][i], self.client_data[&query.id][i]));
+                    }
+                    // println!("v_pos{:?} will print!", v_pos);
+                    result.risk_level = v_pos.iter().fold(0.0/0.0, |m, v| v.max(m));
+                    // result.risk_level = *v_pos.iter().max().unwrap(); //ここのリスクレベルで確率を入力しちゃえばいいんじゃね!?
+                }
             } else {
                 // println!("{0}, this is {1}.", &query.id, "0");
                 result.risk_level = 0.0;

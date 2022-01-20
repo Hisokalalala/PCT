@@ -143,4 +143,59 @@ move occurs because `line` has type `std::result::Result<std::string::String, st
 
 
 現状
-hash tableでの、server側のデータの格納がうまくいっていないなう。
+hash tableでの、server側のデータの格納がうまくいっていないなう。->いけた、けどえーと、構造体の型とかもうちょい可読性あってもいいかもw
+
+
+
+client_id
+1,2,3,4が接触するように作ってある
+
+```
+root@c624d50ecaa7:~/sgx/samplecode/PCT# RUST_BACKTRACE=full bin/app 10000 data/test 6 data/test/server.csv
+[HashSet] r_i size = 128 bytes
+init_enclave...
+ Init Enclave Successful 2!
+[SGX CLOCK] buffers initialize:  0.000028 seconds
+[SGX CLOCK] reading:  0.000614 seconds
+[SGX CLOCK] decrypt each queries:  0.000551 seconds
+[SGX CLOCK] store queies:  0.000649 seconds
+[SGX CLOCK] whole:  0.001962 seconds
+[SGX CLOCK] central data decryption:  0.000018 seconds
+positive result queryIds: [(1, 0.8), (2, 0.8), (3, 0.8), (4, 0.8)]
+[Clocker] Distribute central data:  0.000365 seconds
+[Clocker] ECALL init_enclave:  2.143779 seconds
+[Clocker] ECALL upload_query_data:  0.002649 seconds
+[Clocker] ECALL private_contact_trace:  0.000335 seconds
+[Clocker] ECALL get_result:  0.000025 seconds
+[Clocker] Read Query Data:  0.008982 seconds
+[Clocker] Read Central Data:  0.001714 seconds
+```
+
+data: {1: [[1, 1, 1, 1], [2, 2, 2, 2]], 3: [[1, 1, 1, 1]], 2: [[1, 1, 1, 1]], 4: [[1, 1, 1, 1]]}
+client_data: {3: [[2, 1, 1, 0]], 2: [[2, 1, 3, 0]], 4: [[3, 1, 2, 1]], 1: [[1, 0, 0, 0], [1, 0, 0, 0]]} 
+
+
+
+******データのハッシュ値は時間が違うから全部値が違うという前提の元書いてる。
+
+
+```
+root@c624d50ecaa7:~/sgx/samplecode/PCT# RUST_BACKTRACE=full bin/app 10000 data/test 6 data/test/server_test.csv
+[HashSet] r_i size = 17288 bytes
+init_enclave...
+ Init Enclave Successful 2!
+[SGX CLOCK] buffers initialize:  0.000042 seconds
+[SGX CLOCK] reading:  0.000653 seconds
+[SGX CLOCK] decrypt each queries:  0.000565 seconds
+[SGX CLOCK] store queies:  0.000627 seconds
+[SGX CLOCK] whole:  0.002049 seconds
+[SGX CLOCK] central data decryption:  0.000074 seconds
+positive result queryIds: [(1, 0.0064800004), (2, 0.00047250008), (3, 0.0011812502), (4, 0.00023625002)]
+[Clocker] ECALL private_contact_trace:  0.000497 seconds
+[Clocker] ECALL upload_query_data:  0.002721 seconds
+[Clocker] ECALL init_enclave:  2.151883 seconds
+[Clocker] Distribute central data:  0.000384 seconds
+[Clocker] Read Central Data:  0.001674 seconds
+[Clocker] ECALL get_result:  0.000066 seconds
+[Clocker] Read Query Data:  0.009244 seconds
+```

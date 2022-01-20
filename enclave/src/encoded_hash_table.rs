@@ -34,17 +34,34 @@ impl EncodedHashTable {
         for encoded_value_vec in query_buffer.queries.iter() {
             // println!("=======================!!!!!Now {:?} will print!", encoded_value_vec);
             // Q?なんでこれ反映されない？
-            if result.data.contains_key(&encoded_value_vec.id) {
-                // ここを修正すれば一応複数対応どうにかなりそう
-                continue; 
-            }
+            let mut cnt = 0;
+            // ここのif文、一回もtrueになってないわ. ちなみにデータ構造変える前からそうだったっぽい
+            // if result.data.contains_key(&encoded_value_vec.id) {
+            //     // ここを修正すれば一応複数対応どうにかなりそう
+            //     println!("if continue!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"); //なんか、一回も入ってないわw草
+            //     continue; 
+            // }
             for key in encoded_value_vec.parameters.iter() {
                 // println!("key!!!!!Now {:?} will print!", key); // ok
                 // println!("map!!!!!Now {:?} will print!", self.map);
                 if self.map.contains_key(key) {
-                    result.data.insert(encoded_value_vec.id, self.map[key]);
-                    continue;
+                    // println!("key!!!!!Now {:?} will print!", key); // ok
+                    // println!("encoded_value!!!!!Now {:?} will print!", encoded_value_vec.addi_parameters[cnt]); // ok
+                    // result.data.insert(encoded_value_vec.id, Vec[self.map[key]]);
+                    result.data.entry(encoded_value_vec.id).or_insert_with(|| vec![]).push(self.map[key]);
+                    result.client_data.entry(encoded_value_vec.id).or_insert_with(|| vec![]).push(encoded_value_vec.addi_parameters[cnt]);
+                    // println!("======================"); // ok
+                    // println!("key!!!!!Now {:?} will print!", key); // ok
+                    // println!("map!!!!!Now {:?} will print!", self.map);
+                    // println!("id!!!!!Now {:?} will print!", encoded_value_vec.id); // ok
+                    // println!("data!!!!!Now {:?} will print!", self.map[key]); // ok
+                    // println!("client!!!!!Now {:?} will print!", encoded_value_vec.addi_parameters[cnt]); // ok
+                    // println!("======================"); // ok
+                    // result.data.insert(encoded_value_vec.id, Vec[self.map[key], encoded_value_vec.addi_parameters[cnt]]);
+                    // result.client_data.insert(encoded_value_vec.id, encoded_value_vec.addi_parameters[cnt]);
+                    // continue;
                 }
+                cnt += 1;
             }
         }
     }
