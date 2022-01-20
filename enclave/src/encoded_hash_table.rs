@@ -35,7 +35,7 @@ impl EncodedHashTable {
             // println!("=======================!!!!!Now {:?} will print!", encoded_value_vec);
             // Q?なんでこれ反映されない？
             let mut cnt = 0;
-            // ここのif文、一回もtrueになってないわ.
+            // ここのif文、一回もtrueになってないわ. ちなみにデータ構造変える前からそうだったっぽい
             // if result.data.contains_key(&encoded_value_vec.id) {
             //     // ここを修正すれば一応複数対応どうにかなりそう
             //     println!("if continue!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"); //なんか、一回も入ってないわw草
