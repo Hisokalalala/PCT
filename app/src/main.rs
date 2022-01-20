@@ -43,7 +43,6 @@ mod util;
 use util::*;
 pub const QUERY_ID_SIZE_U8: usize = 8;
 pub const QUERY_RESULT_U8: usize = 4;
-// pub const QUERY_POSSIBILITRY_f32: usize=?
 pub const RESPONSE_DATA_SIZE_U8: usize = QUERY_ID_SIZE_U8 + QUERY_RESULT_U8;
 
 /*

@@ -199,3 +199,12 @@ positive result queryIds: [(1, 0.0064800004), (2, 0.00047250008), (3, 0.00118125
 [Clocker] ECALL get_result:  0.000066 seconds
 [Clocker] Read Query Data:  0.009244 seconds
 ```
+
+
+addi: room
+0 :default, ワイルドカード的なノリ
+1 :
+2
+3
+4
+...

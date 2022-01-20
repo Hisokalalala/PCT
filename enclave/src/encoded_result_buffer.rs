@@ -131,7 +131,7 @@ impl EncodedResultBuffer {
                     // let mut v= vec![5, 6, 8, 4, 2, 7];
                     // let minValue= *v.iter().min().unwrap();
                     let mut v_pos = vec![::std::f32::NAN];
-                    for i in 0..len {
+                    for i in 0..(len-1) {
                         v_pos.push(EncodedResultBuffer::calculate_possibility(self.data[&query.id][i], self.client_data[&query.id][i]));
                     }
                     // println!("v_pos{:?} will print!", v_pos);
