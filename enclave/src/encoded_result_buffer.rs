@@ -108,7 +108,7 @@ impl EncodedResultBuffer {
         query_buffer: &EncodedQueryBuffer,
         response_vec: &mut Vec<u8>,
     ) {
-        println!("self {:?} will print!", self);
+        // println!("self {:?} will print!", self);
         // ここでのqueriesは構造体のメンバ変数,クエリにあったidを一つ一つみていって、
         // それをresult.idに格納して同時にとresult.risk_levelを設定した
         for query in query_buffer.queries.iter() {
