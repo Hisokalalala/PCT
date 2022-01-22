@@ -48,8 +48,10 @@ impl EncodedHashTable {
                     // println!("key!!!!!Now {:?} will print!", key); // ok
                     // println!("encoded_value!!!!!Now {:?} will print!", encoded_value_vec.addi_parameters[cnt]); // ok
                     // result.data.insert(encoded_value_vec.id, Vec[self.map[key]]);
-                    result.data.entry(encoded_value_vec.id).or_insert_with(|| vec![]).push(self.map[key]);
-                    result.client_data.entry(encoded_value_vec.id).or_insert_with(|| vec![]).push(encoded_value_vec.addi_parameters[cnt]);
+                    if self.map[key][ADDITIONAL_DATA_SIZE-1] == encoded_value_vec.addi_parameters[cnt][ADDITIONAL_DATA_SIZE-1] {
+                        result.data.entry(encoded_value_vec.id).or_insert_with(|| vec![]).push(self.map[key]);
+                        result.client_data.entry(encoded_value_vec.id).or_insert_with(|| vec![]).push(encoded_value_vec.addi_parameters[cnt]);
+                    }
                     // println!("======================"); // ok
                     // println!("key!!!!!Now {:?} will print!", key); // ok
                     // println!("map!!!!!Now {:?} will print!", self.map);

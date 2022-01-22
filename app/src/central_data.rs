@@ -5,7 +5,7 @@ use bincode;
 use std::mem;
 
 use crate::enc_util::encrypt_central_data;
-pub const ENCODEDVALUE_SIZE: usize = 12;
+pub const ENCODEDVALUE_SIZE: usize = 13;
 
 /* rie
     チャンク化しない
