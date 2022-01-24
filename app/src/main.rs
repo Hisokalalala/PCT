@@ -74,6 +74,7 @@ fn private_set_intersection() {
 
     let mut clocker = Clocker::new();
 
+    clocker.set_and_start("ALL PROCESS");
     // central dataというのはサーバに保存してあるデータのことかな？ clokerで経過時間を測っている、後ろのあれはclockの名前
     /* read central data */
     clocker.set_and_start("Read Central Data");
@@ -245,6 +246,8 @@ fn private_set_intersection() {
     let data_st = "hashtable";
     #[cfg(feature = "fsa")]
     let data_st = "fsa";
+
+    clocker.stop("ALL PROCESS");
 
     write_to_file(
         format!("result/{}-{}-{}-{}-{}.txt",

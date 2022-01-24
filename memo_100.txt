@@ -1,0 +1,206 @@
+client size 100, threashold of each chunk block size = 1200000
+# Tokyo
+```
+RUST_BACKTRACE=1 bin/app 1200000 tools/trajectory_hash/data_expanded/tokyo 101 tools/trajectory_hash/data_expanded/tokyo/server-14000-24-22.csv
+```
+ECALL private_contact_trace   :  0.188438 seconds
+ECALL init_enclave            :  3.187260 seconds
+ECALL get_result              :  0.220079 seconds
+Read Query Data               :  0.401592 seconds
+ALL PROCESS                   :  35.771558 seconds
+ECALL upload_query_data       :  0.029440 seconds
+Distribute central data       :  9.179347 seconds
+Read Central Data             :  22.504940 seconds
+
+```
+RUST_BACKTRACE=1 bin/app 1200000 tools/trajectory_hash/data_expanded/tokyo 501 tools/trajectory_hash/data_expanded/tokyo/server-14000-24-22.csv
+```
+そのまま動いた、メモリ増加前
+ECALL init_enclave            :  3.162009 seconds
+Read Central Data             :  21.878686 seconds
+Read Query Data               :  1.068123 seconds
+Distribute central data       :  9.060092 seconds
+ALL PROCESS                   :  36.900841 seconds
+ECALL private_contact_trace   :  0.437970 seconds
+ECALL get_result              :  1.017437 seconds
+ECALL upload_query_data       :  0.148357 seconds
+
+メモリ増やした後
+Read Central Data             :  21.832603 seconds
+ALL PROCESS                   :  68.687746 seconds
+ECALL private_contact_trace   :  0.444071 seconds
+ECALL init_enclave            :  34.634653 seconds
+Distribute central data       :  9.007614 seconds
+Read Query Data               :  1.082323 seconds
+ECALL upload_query_data       :  0.147701 seconds
+ECALL get_result              :  1.052325 seconds
+
+```
+RUST_BACKTRACE=1 bin/app 1200000 tools/trajectory_hash/data_expanded/tokyo 1001 tools/trajectory_hash/data_expanded/tokyo/server-14000-24-22.csv
+```
+メモリ増やさないと謎のエラー起きる=>thread '<unnamed>' panicked at 'range end index 17285268 out of range for slice of length 17268000', src/lib.rs:134:14
+fatal runtime error: failed to initiate panic, error 5
+Illegal instruction (core dumped)
+メモリ増やした後
+ECALL get_result              :  2.119364 seconds
+ECALL upload_query_data       :  0.295403 seconds
+Distribute central data       :  9.029063 seconds
+ECALL private_contact_trace   :  0.743393 seconds
+ECALL init_enclave            :  34.783993 seconds
+Read Query Data               :  1.946666 seconds
+Read Central Data             :  22.191608 seconds
+ALL PROCESS                   :  71.627206 seconds
+
+```
+RUST_BACKTRACE=1 bin/app 1200000 tools/trajectory_hash/data_expanded/tokyo 10001 tools/trajectory_hash/data_expanded/tokyo/server-14000-24-22.csv
+```
+ECALL init_enclave            :  34.525566 seconds
+ECALL upload_query_data       :  5.055117 seconds
+Read Central Data             :  21.798625 seconds
+ECALL get_result              :  19.497282 seconds
+ALL PROCESS                   :  123.945882 seconds
+Read Query Data               :  16.305251 seconds
+ECALL private_contact_trace   :  15.731469 seconds
+Distribute central data       :  9.052160 seconds
+
+```
+RUST_BACKTRACE=1 bin/app 1200000 tools/trajectory_hash/data_expanded/tokyo 15001 tools/trajectory_hash/data_expanded/tokyo/server-14000-24-22.csv
+```
+ECALL private_contact_trace   :  25.748474 seconds
+ECALL upload_query_data       :  7.674575 seconds
+ECALL get_result              :  24.185563 seconds
+ALL PROCESS                   :  151.681441 seconds
+Read Query Data               :  24.728222 seconds
+Read Central Data             :  22.292271 seconds
+Distribute central data       :  9.398010 seconds
+ECALL init_enclave            :  34.840744 seconds
+
+
+
+# Kinki
+```
+RUST_BACKTRACE=1 bin/app 1200000 tools/trajectory_hash/data_expanded/kinki 101 tools/trajectory_hash/data_expanded/kinki/server-14000-24-22.csv
+```
+ECALL upload_query_data       :  0.029760 seconds
+ECALL private_contact_trace   :  0.291514 seconds
+ECALL get_result              :  0.002292 seconds
+Read Central Data             :  21.890605 seconds
+Distribute central data       :  8.937985 seconds
+Read Query Data               :  0.412388 seconds
+ECALL init_enclave            :  3.034131 seconds
+ALL PROCESS                   :  34.660646 seconds
+
+```
+RUST_BACKTRACE=1 bin/app 1200000 tools/trajectory_hash/data_expanded/kinki 501 tools/trajectory_hash/data_expanded/kinki/server-14000-24-22.csv
+```
+そのまま動いた、メモリ増加前
+Read Central Data             :  21.875437 seconds
+ALL PROCESS                   :  35.652489 seconds
+ECALL private_contact_trace   :  0.478519 seconds
+ECALL get_result              :  0.006329 seconds
+Read Query Data               :  1.074734 seconds
+ECALL upload_query_data       :  0.150110 seconds
+Distribute central data       :  8.918690 seconds
+ECALL init_enclave            :  3.019276 seconds
+
+メモリ増やした後
+ALL PROCESS                   :  67.432549 seconds
+ECALL init_enclave            :  34.463532 seconds
+ECALL get_result              :  0.006404 seconds
+Read Central Data             :  21.938401 seconds
+Distribute central data       :  8.855219 seconds
+Read Query Data               :  1.103879 seconds
+ECALL upload_query_data       :  0.144650 seconds
+ECALL private_contact_trace   :  0.472139 seconds
+
+```
+RUST_BACKTRACE=1 bin/app 1200000 tools/trajectory_hash/data_expanded/kinki 1001 tools/trajectory_hash/data_expanded/kinki/server-14000-24-22.csv
+```
+メモリ増やした後
+Distribute central data       :  8.918961 seconds
+Read Central Data             :  21.764383 seconds
+ECALL init_enclave            :  34.380841 seconds
+ECALL private_contact_trace   :  0.732958 seconds
+ECALL get_result              :  0.013843 seconds
+ALL PROCESS                   :  68.505233 seconds
+ECALL upload_query_data       :  0.299756 seconds
+Read Query Data               :  1.898809 seconds
+
+```
+RUST_BACKTRACE=1 bin/app 1200000 tools/trajectory_hash/data_expanded/kinki 10001 tools/trajectory_hash/data_expanded/kinki/server-14000-24-22.csv
+```
+ALL PROCESS                   :  104.510931 seconds
+ECALL private_contact_trace   :  14.277191 seconds
+ECALL upload_query_data       :  5.030283 seconds
+Read Central Data             :  21.826256 seconds
+Distribute central data       :  8.887159 seconds
+Read Query Data               :  17.975768 seconds
+ECALL get_result              :  0.157920 seconds
+ECALL init_enclave            :  34.380266 seconds
+
+```
+RUST_BACKTRACE=1 bin/app 1200000 tools/trajectory_hash/data_expanded/kinki 15001 tools/trajectory_hash/data_expanded/kinki/server-14000-24-22.csv
+```
+ECALL private_contact_trace   :  21.471837 seconds
+ECALL init_enclave            :  34.661797 seconds
+Read Query Data               :  25.842582 seconds
+ECALL upload_query_data       :  7.691676 seconds
+Distribute central data       :  9.510777 seconds
+ECALL get_result              :  0.277522 seconds
+ALL PROCESS                   :  127.207960 seconds
+Read Central Data             :  24.838493 seconds
+
+
+# NewYork 24-22 ->13
+```
+RUST_BACKTRACE=1 bin/app 1200000 tools/trajectory_hash/data_expanded/24-22 100 tools/trajectory_hash/data_expanded/24-22/server-1000-24-22.csv
+```
+PCT/result/hashtable-1200000-100-20160000-1643027378.txt
+ALL PROCESS                   :  43.835464 seconds
+Distribute central data       :  11.230645 seconds
+ECALL init_enclave            :  3.391963 seconds
+Read Query Data               :  3.269572 seconds
+ECALL upload_query_data       :  0.337208 seconds
+ECALL private_contact_trace   :  1.703989 seconds
+Read Central Data             :  23.543318 seconds
+ECALL get_result              :  0.000970 seconds
+
+```
+これ多分違うやつだぁ〜
+RUST_BACKTRACE=1 bin/app 1200000 tools/trajectory_hash/data_expanded/24-22 100 tools/trajectory_hash/data_expanded/24-22/server-5000-24-22.csv
+```
+PCT/result/hashtable-1200000-100-100800000-1643027613.txt
+ALL PROCESS                   :  208.169597 seconds
+Distribute central data       :  73.391180 seconds
+ECALL init_enclave            :  10.223726 seconds
+Read Central Data             :  112.235021 seconds
+ECALL private_contact_trace   :  8.219141 seconds
+ECALL upload_query_data       :  0.335355 seconds
+ECALL get_result              :  0.001596 seconds
+Read Query Data               :  3.398775 seconds
+
+```
+RUST_BACKTRACE=1 bin/app 1200000 tools/trajectory_hash/data_expanded/24-22 500 tools/trajectory_hash/data_expanded/24-22/server-1000-24-22.csv
+```
+メモリ増やさなきゃ動かなかった
+ECALL upload_query_data       :  2.094602 seconds
+ECALL get_result              :  0.001566 seconds
+Read Query Data               :  16.753867 seconds
+ECALL init_enclave            :  34.893657 seconds
+ALL PROCESS                   :  92.810198 seconds
+Read Central Data             :  23.597702 seconds
+Distribute central data       :  11.326897 seconds
+ECALL private_contact_trace   :  2.253363 seconds
+
+```
+RUST_BACKTRACE=1 bin/app 1200000 tools/trajectory_hash/data_expanded/24-22 1000 tools/trajectory_hash/data_expanded/24-22/server-1000-24-22.csv
+```
+メモリ増やしてる、じゃないと多分動かない
+ALL PROCESS                   :  114.777402 seconds
+ECALL upload_query_data       :  4.157425 seconds
+Read Query Data               :  34.079620 seconds
+Distribute central data       :  11.508851 seconds
+Read Central Data             :  23.851940 seconds
+ECALL init_enclave            :  34.891971 seconds
+ECALL get_result              :  0.002500 seconds
+ECALL private_contact_trace   :  2.685674 seconds

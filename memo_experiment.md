@@ -103,34 +103,25 @@ root@c624d50ecaa7:~/sgx/samplecode/PCT# RUST_BACKTRACE=1 bin/app 1200000 tools/t
 
 RUST_BACKTRACE=1 bin/app 1200000 tools/trajectory_hash/data_expanded/tokyo 1000 tools/trajectory_hash/data_expanded/tokyo/server-14000-24-22.csv
 =>
-[Clocker] ECALL get_result:  0.218642 seconds
-[Clocker] Distribute central data:  8.849062 seconds
-[Clocker] ECALL init_enclave:  3.120117 seconds
-[Clocker] ECALL private_contact_trace:  0.188842 seconds
-[Clocker] Read Central Data:  21.597284 seconds
-[Clocker] Read Query Data:  0.161736 seconds
-[Clocker] ECALL upload_query_data:  0.030430 seconds
+[Clocker] Read Query Data:  1.864822 seconds
+[Clocker] ECALL upload_query_data:  0.292249 seconds
+[Clocker] ECALL private_contact_trace:  0.742757 seconds
+[Clocker] ECALL get_result:  2.071434 seconds
+[Clocker] ECALL init_enclave:  3.131406 seconds
+[Clocker] Distribute central data:  8.757539 seconds
+[Clocker] Read Central Data:  21.633737 seconds
 
 
 RUST_BACKTRACE=1 bin/app 1200000 tools/trajectory_hash/data_expanded/tokyo 10000 tools/trajectory_hash/data_expanded/tokyo/server-14000-24-22.csv
 =>
-[Clocker] Read Query Data:  0.164956 seconds
-[Clocker] Read Central Data:  21.533509 seconds
-[Clocker] ECALL init_enclave:  3.120089 seconds
-[Clocker] ECALL upload_query_data:  0.029946 seconds
-[Clocker] Distribute central data:  8.888972 seconds
-[Clocker] ECALL private_contact_trace:  0.187760 seconds
-[Clocker] ECALL get_result:  0.215290 seconds
-
+init_enclave...
+ Init Enclave Successful 2!
+[SGX CLOCK] buffers initialize:  0.000042 seconds
+memory allocation of 172662732 bytes failedIllegal instruction (core dumped)
+これなんか、実行の制限を書き換えたら良いかもしれない。
 
 RUST_BACKTRACE=1 bin/app 1200000 tools/trajectory_hash/data_expanded/tokyo 49999 tools/trajectory_hash/data_expanded/tokyo/server-14000-24-22.csv
-[Clocker] Read Query Data:  0.164364 seconds
-[Clocker] Distribute central data:  8.882627 seconds
-[Clocker] ECALL private_contact_trace:  0.189648 seconds
-[Clocker] ECALL init_enclave:  3.124965 seconds
-[Clocker] ECALL get_result:  0.218749 seconds
-[Clocker] Read Central Data:  21.572727 seconds
-[Clocker] ECALL upload_query_data:  0.030239 seconds
+=>
 
 
 # Kinki
