@@ -227,3 +227,12 @@ positive result queryIds: [(1, 0.00050400005), (2, 0.00047250008), (3, 0.0011812
 
 
 TODO: 密閉空間のやつ、mergeするかどうか。
+
+
+QUERY_SIZE=1439 ENCODEDVALUE_SIZE=12 FEATURE="hashtable" make
+
+
+RUST_BACKTRACE=1 bin/app 10000 tools/trajectory_hash/data_expanded/tokyo 2 tools/trajectory_hash/data_expanded/tokyo/server-14000-24-22.csv
+
+PCT/tools/trajectory_hash/data/random/client-24-22-999.csv
+/home/cao/work/PCT/tools/trajectory_hash/data/random/server-1000-24-22.csv

@@ -67,6 +67,70 @@ positive result queryIds: [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
 [Clocker] Distribute central data:  7.092797 seconds
 [Clocker] ECALL init_enclave:  2.703656 seconds
 
+RUST_BACKTRACE=1 bin/app 10000 tools/trajectory_hash/data_expanded/tokyo 100 tools/trajectory_hash/data_expanded/tokyo/server-14000-24-22.csv
+=>
+positive result queryIds: [(5, 0.0038400006), (6, 0.0038400006), (7, 0.0038400006), (8, 0.0038400006), (9, 0.0038400006), (10, 0.0038400006), (11, 0.0038400006), (12, 0.0038400006), (13, 0.0038400006), (14, 0.0038400006), (15, 0.0038400006), (16, 0.0038400006), (17, 0.0038400006), (18, 0.0038400006), (19, 0.0038400006), (20, 0.0038400006), (21, 0.0038400006), (22, 0.0038400006), (23, 0.0038400006), (24, 0.0038400006), (25, 0.0038400006), (26, 0.0038400006), (27, 0.0038400006), (28, 0.0038400006), (29, 0.0038400006), (30, 0.0038400006), (31, 0.0038400006), (32, 0.0038400006), (33, 0.0038400006), (34, 0.0038400006), (35, 0.0038400006), (36, 0.0038400006), (37, 0.0038400006), (38, 0.0038400006), (39, 0.0038400006), (40, 0.0038400006), (41, 0.0038400006), (42, 0.0038400006), (43, 0.0038400006), (44, 0.0038400006), (45, 0.0038400006), (46, 0.0038400006), (47, 0.0038400006), (48, 0.0038400006), (49, 0.0038400006), (50, 0.0038400006), (51, 0.0038400006), (52, 0.0038400006), (53, 0.0038400006), (54, 0.0038400006), (55, 0.0038400006), (56, 0.0038400006), (57, 0.0038400006), (58, 0.0038400006), (59, 0.0038400006), (60, 0.0038400006), (61, 0.0038400006), (62, 0.0038400006), (63, 0.0038400006), (64, 0.0038400006), (65, 0.0038400006), (66, 0.0038400006), (67, 0.0038400006), (68, 0.0038400006), (69, 0.0038400006), (70, 0.0038400006), (71, 0.0038400006), (72, 0.0038400006), (73, 0.0038400006), (74, 0.0038400006), (75, 0.0038400006), (76, 0.0038400006), (77, 0.0038400006), (78, 0.0038400006), (79, 0.0038400006), (80, 0.0038400006), (81, 0.0038400006), (82, 0.0038400006), (83, 0.0038400006), (84, 0.0038400006), (85, 0.0038400006), (86, 0.0038400006), (87, 0.0038400006), (88, 0.0038400006), (89, 0.0038400006), (90, 0.0038400006), (91, 0.0038400006), (92, 0.0038400006), (93, 0.0038400006), (94, 0.0038400006), (95, 0.0038400006), (96, 0.0038400006), (97, 0.0038400006), (98, 0.0038400006)]
+[Clocker] ECALL init_enclave:  3.057511 seconds
+[Clocker] ECALL upload_query_data:  0.029668 seconds
+[Clocker] Read Central Data:  21.502283 seconds
+[Clocker] ECALL private_contact_trace:  6.535682 seconds
+[Clocker] Distribute central data:  9.554316 seconds
+[Clocker] ECALL get_result:  0.228885 seconds
+[Clocker] Read Query Data:  0.163887 seconds
+
+
+RUST_BACKTRACE=1 bin/app 140000 tools/trajectory_hash/data_expanded/tokyo 100 tools/trajectory_hash/data_expanded/tokyo/server-14000-24-22.csv
+=>
+[Clocker] Read Central Data:  21.600356 seconds
+[Clocker] ECALL init_enclave:  3.109033 seconds
+[Clocker] Read Query Data:  0.160274 seconds
+[Clocker] ECALL upload_query_data:  0.029891 seconds
+[Clocker] Distribute central data:  9.040531 seconds
+[Clocker] ECALL private_contact_trace:  0.565190 seconds
+[Clocker] ECALL get_result:  0.216284 seconds
+
+
+root@c624d50ecaa7:~/sgx/samplecode/PCT# RUST_BACKTRACE=1 bin/app 1200000 tools/trajectory_hash/data_expanded/tokyo 100 tools/trajectory_hash/data_expanded/tokyo/server-14000-24-22.csv
+=>
+[Clocker] ECALL upload_query_data:  0.029756 seconds
+[Clocker] ECALL get_result:  0.213897 seconds
+[Clocker] Distribute central data:  8.861293 seconds
+[Clocker] Read Central Data:  21.747926 seconds
+[Clocker] Read Query Data:  0.161211 seconds
+[Clocker] ECALL private_contact_trace:  0.189240 seconds
+[Clocker] ECALL init_enclave:  3.117446 seconds
+
+
+RUST_BACKTRACE=1 bin/app 1200000 tools/trajectory_hash/data_expanded/tokyo 1000 tools/trajectory_hash/data_expanded/tokyo/server-14000-24-22.csv
+=>
+[Clocker] ECALL get_result:  0.218642 seconds
+[Clocker] Distribute central data:  8.849062 seconds
+[Clocker] ECALL init_enclave:  3.120117 seconds
+[Clocker] ECALL private_contact_trace:  0.188842 seconds
+[Clocker] Read Central Data:  21.597284 seconds
+[Clocker] Read Query Data:  0.161736 seconds
+[Clocker] ECALL upload_query_data:  0.030430 seconds
+
+
+RUST_BACKTRACE=1 bin/app 1200000 tools/trajectory_hash/data_expanded/tokyo 10000 tools/trajectory_hash/data_expanded/tokyo/server-14000-24-22.csv
+=>
+[Clocker] Read Query Data:  0.164956 seconds
+[Clocker] Read Central Data:  21.533509 seconds
+[Clocker] ECALL init_enclave:  3.120089 seconds
+[Clocker] ECALL upload_query_data:  0.029946 seconds
+[Clocker] Distribute central data:  8.888972 seconds
+[Clocker] ECALL private_contact_trace:  0.187760 seconds
+[Clocker] ECALL get_result:  0.215290 seconds
+
+
+RUST_BACKTRACE=1 bin/app 1200000 tools/trajectory_hash/data_expanded/tokyo 49999 tools/trajectory_hash/data_expanded/tokyo/server-14000-24-22.csv
+[Clocker] Read Query Data:  0.164364 seconds
+[Clocker] Distribute central data:  8.882627 seconds
+[Clocker] ECALL private_contact_trace:  0.189648 seconds
+[Clocker] ECALL init_enclave:  3.124965 seconds
+[Clocker] ECALL get_result:  0.218749 seconds
+[Clocker] Read Central Data:  21.572727 seconds
+[Clocker] ECALL upload_query_data:  0.030239 seconds
 
 
 # Kinki
